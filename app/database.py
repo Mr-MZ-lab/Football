@@ -3,11 +3,15 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
+_url = settings.DATABASE_URL
+_is_sqlite = _url.startswith("sqlite")
+
 engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    _url,
+    pool_pre_ping=not _is_sqlite,
+    # SQLite uses StaticPool — pool_size/max_overflow not applicable
+    **({} if _is_sqlite else {"pool_size": 10, "max_overflow": 20}),
+    connect_args={"check_same_thread": False} if _is_sqlite else {},
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
