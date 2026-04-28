@@ -55,6 +55,9 @@ class LivePredictionEngine:
         # ── Feature engineering ───────────────────────────────────────────────
         raw = get_team_features(home_team, away_team)
         prematch_features = _fe.build_prematch_features(raw)
+        home_subs = request.get("home_subs", [])
+        away_subs = request.get("away_subs", [])
+
         live_state = {
             "current_minute": minute,
             "home_goals": home_goals,
@@ -66,6 +69,8 @@ class LivePredictionEngine:
             "home_shots_on_target": request.get("home_shots_on_target", 0),
             "away_shots_on_target": request.get("away_shots_on_target", 0),
             "home_possession": request.get("home_possession", 50.0),
+            "home_subs": home_subs,
+            "away_subs": away_subs,
         }
         live_features = _fe.build_live_features(prematch_features, live_state)
 
@@ -104,8 +109,17 @@ class LivePredictionEngine:
             away_goals_so_far=away_goals,
         )
 
-        # ── Momentum ──────────────────────────────────────────────────────────
+        # ── Momentum (with substitution boost) ───────────────────────────────
         momentum = self._compute_momentum(live_features, live_state)
+
+        # ── Substitution impact ───────────────────────────────────────────────
+        sub_impact = self._compute_sub_impact(home_subs, away_subs, minute)
+        if sub_impact:
+            # Subs boost the subbing team's expected remaining goals
+            h_boost = sub_impact["home_boost"]
+            a_boost = sub_impact["away_boost"]
+            exp_h_rem = round(exp_h_rem * (1.0 + h_boost), 3)
+            exp_a_rem = round(exp_a_rem * (1.0 + a_boost), 3)
 
         # ── Value bets ────────────────────────────────────────────────────────
         value_bets = []
@@ -138,9 +152,52 @@ class LivePredictionEngine:
             confidence_score=confidence,
             value_bets=value_bets,
             momentum=momentum,
+            substitutions=sub_impact,
         )
 
     # ── helpers ───────────────────────────────────────────────────────────────
+
+    def _compute_sub_impact(
+        self,
+        home_subs: List[str],
+        away_subs: List[str],
+        minute: int,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Estimate the impact of substitutions on remaining expected goals.
+
+        Logic: each sub made after minute 60 injects fresh energy.
+        The earlier the sub, the more minutes of impact; the later, the less
+        volume but still a spike of intensity (set-piece threat, fresh press).
+
+        Returns None if no subs, otherwise a dict with boost factors.
+        """
+        if not home_subs and not away_subs:
+            return None
+
+        def _boost(subs: List[str]) -> float:
+            if not subs:
+                return 0.0
+            # Each sub contributes +4% to remaining xG, capped at 3 subs (+12%)
+            n = min(len(subs), 3)
+            per_sub = 0.04
+            # Earlier subs are slightly more impactful (more time on pitch)
+            time_factor = max(0.5, (90 - minute) / 30.0)
+            return round(n * per_sub * time_factor, 4)
+
+        h_boost = _boost(home_subs)
+        a_boost = _boost(away_subs)
+
+        return {
+            "home_subs":   home_subs,
+            "away_subs":   away_subs,
+            "home_boost":  h_boost,
+            "away_boost":  a_boost,
+            "note": (
+                f"Home substitutions (+{h_boost*100:.1f}% xG boost), "
+                f"Away substitutions (+{a_boost*100:.1f}% xG boost)."
+            ),
+        }
 
     def _compute_momentum(
         self, live_features: Dict[str, float], live_state: Dict[str, Any]

@@ -72,6 +72,7 @@ from app.api.player       import router as player_router
 from app.api.today        import router as today_router
 from app.api.markets      import router as markets_router
 from app.api.late_scorer  import router as late_scorer_router
+from app.api.arbitrage    import router as arbitrage_router
 
 app.include_router(predict_router,      prefix="/api/v1", tags=["Pre-Match Prediction"])
 app.include_router(live_router,         prefix="/api/v1", tags=["Live Prediction"])
@@ -79,6 +80,7 @@ app.include_router(player_router,       prefix="/api/v1", tags=["Player Probabil
 app.include_router(today_router,        prefix="/api/v1", tags=["Today's Matches"])
 app.include_router(markets_router,      prefix="/api/v1", tags=["Betting Markets"])
 app.include_router(late_scorer_router,  prefix="/api/v1", tags=["Late Goal Scorer"])
+app.include_router(arbitrage_router,    prefix="/api/v1", tags=["Arbitrage & Hedging"])
 
 
 @app.get("/", tags=["Health"])
@@ -94,6 +96,8 @@ def root():
             "POST /api/v1/live               — live in-play prediction",
             "POST /api/v1/player-probability — per-player scoring probability",
             "POST /api/v1/late-scorer        — who scores after minute 90?",
+            "POST /api/v1/arbitrage          — cross-bookmaker arbitrage detection",
+            "POST /api/v1/hedge              — lock profit or cap loss with a second bet",
         ],
         "data_sources": {
             "schedule": "football-data.org (configure FOOTBALL_DATA_API_KEY)",

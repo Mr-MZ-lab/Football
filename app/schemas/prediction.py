@@ -30,6 +30,17 @@ class LivePredictionRequest(BaseModel):
     home_shots_on_target: int = Field(0, ge=0)
     away_shots_on_target: int = Field(0, ge=0)
     home_possession: float = Field(50.0, ge=0.0, le=100.0)
+    # Substitutions — each sub made raises team momentum slightly
+    home_subs: List[str] = Field(
+        default=[],
+        description="Names of home players who came on as substitutes",
+        json_schema_extra={"example": ["Thomas Müller", "Serge Gnabry"]},
+    )
+    away_subs: List[str] = Field(
+        default=[],
+        description="Names of away players who came on as substitutes",
+        json_schema_extra={"example": ["Donyell Malen"]},
+    )
     bookmaker_odds: Optional[Dict[str, float]] = None
 
 
@@ -109,6 +120,9 @@ class LivePredictionResponse(BaseModel):
 
     # Momentum indicator
     momentum: Optional[Dict[str, float]] = None  # {"home": 0.6, "away": 0.4}
+
+    # Substitution impact summary
+    substitutions: Optional[Dict[str, Any]] = None
 
 
 class PlayerProbabilityResponse(BaseModel):
