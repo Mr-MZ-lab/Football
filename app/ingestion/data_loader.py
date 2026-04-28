@@ -1,36 +1,50 @@
 """
-Loads data from a provider and returns it as Pandas DataFrames
-for feature engineering. Also handles the one-time mock data seeding.
+Loads data from a provider and returns feature dicts for the ML pipeline.
+
+Provider selection:
+  - FOOTBALL_DATA_API_KEY set → FootballDataProvider (real API)
+  - Otherwise               → MockDataProvider
+
+Also handles one-time mock data seeding into PostgreSQL.
 """
 import logging
-from typing import Optional
-import pandas as pd
-
-from app.ingestion.mock_provider import MockDataProvider, TEAM_PROFILES, PLAYER_PROFILES, DEFAULT_PLAYERS
+from app.config import settings
 
 logger = logging.getLogger(__name__)
-_provider = MockDataProvider()
+
+
+def _get_provider():
+    """Return the best available data provider."""
+    if settings.FOOTBALL_DATA_API_KEY:
+        try:
+            from app.ingestion.football_data_provider import FootballDataProvider
+            return FootballDataProvider(settings.FOOTBALL_DATA_API_KEY)
+        except Exception as e:
+            logger.warning(f"FootballDataProvider init failed: {e}. Falling back to mock.")
+    from app.ingestion.mock_provider import MockDataProvider
+    return MockDataProvider()
+
+
+# Module-level singleton (created once per worker)
+_provider = _get_provider()
 
 
 def get_team_features(home_team: str, away_team: str) -> dict:
-    """
-    Fetch and merge features for both teams into a single dict suitable
-    for the feature engineering pipeline.
-    """
-    home_stats = _provider.get_team_stats(home_team)
-    away_stats = _provider.get_team_stats(away_team)
+    """Fetch and merge features for both teams."""
+    home_stats   = _provider.get_team_stats(home_team)
+    away_stats   = _provider.get_team_stats(away_team)
     home_history = _provider.get_historical_matches(home_team, last_n=10)
     away_history = _provider.get_historical_matches(away_team, last_n=10)
-    h2h = _provider.get_head_to_head(home_team, away_team, last_n=10)
+    h2h          = _provider.get_head_to_head(home_team, away_team, last_n=10)
 
     return {
-        "home_team": home_team,
-        "away_team": away_team,
-        "home_stats": home_stats,
-        "away_stats": away_stats,
+        "home_team":    home_team,
+        "away_team":    away_team,
+        "home_stats":   home_stats,
+        "away_stats":   away_stats,
         "home_history": home_history,
         "away_history": away_history,
-        "h2h": h2h,
+        "h2h":          h2h,
     }
 
 
@@ -40,15 +54,20 @@ def get_player_features(home_team: str, away_team: str) -> dict:
     return {"home_players": home_players, "away_players": away_players}
 
 
+def get_todays_matches(league: str = "Bundesliga"):
+    """Return today's fixtures from the configured provider."""
+    if hasattr(_provider, "get_todays_matches"):
+        return _provider.get_todays_matches(league)
+    return []
+
+
 def seed_mock_data():
-    """
-    Attempt to seed the PostgreSQL database with mock teams and players.
-    Silently skips if the DB is unavailable (e.g. during testing without Docker).
-    """
+    """Seed the DB with mock teams/players on first run."""
     try:
         from app.database import SessionLocal
         from app.models.team import Team
         from app.models.player import Player
+        from app.ingestion.mock_provider import TEAM_PROFILES, PLAYER_PROFILES, DEFAULT_PLAYERS
 
         db = SessionLocal()
         try:
@@ -60,8 +79,8 @@ def seed_mock_data():
                 team = Team(
                     name=team_name,
                     short_name=team_name[:3].upper(),
-                    league="Premier League",
-                    country="England",
+                    league=profile.get("league", "Unknown"),
+                    country="Germany" if profile.get("league") == "Bundesliga" else "England",
                     attack_strength=profile["attack"],
                     defense_weakness=profile["defense"],
                     avg_xg_scored=profile["avg_xg"],

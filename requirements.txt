@@ -22,7 +22,6 @@ xgboost==2.0.2
 
 # Deep learning (LSTM)
 torch==2.1.1
-torchvision==0.16.1
 
 # Settings / environment
 pydantic==2.5.2
