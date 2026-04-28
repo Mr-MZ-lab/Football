@@ -79,6 +79,8 @@ PLAYER_PROFILES = {
         {"name": "Leroy Sané",        "position": "FWD", "xg_per_90": 0.35, "shots_per_90": 2.0, "penalties_taken": 0},
         {"name": "Thomas Müller",     "position": "FWD", "xg_per_90": 0.28, "shots_per_90": 1.8, "penalties_taken": 0},
         {"name": "Serge Gnabry",      "position": "FWD", "xg_per_90": 0.32, "shots_per_90": 1.9, "penalties_taken": 0},
+        {"name": "Alphonso Davies",   "position": "DEF", "xg_per_90": 0.10, "shots_per_90": 0.6, "penalties_taken": 0},
+        {"name": "Joshua Kimmich",    "position": "DEF", "xg_per_90": 0.24, "shots_per_90": 1.2, "penalties_taken": 0},
     ],
     "Borussia Dortmund": [
         {"name": "Serhou Guirassy",   "position": "FWD", "xg_per_90": 0.72, "shots_per_90": 3.5, "penalties_taken": 3},
