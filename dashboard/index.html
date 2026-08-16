@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Mr-MZ-lab GitHub Dashboard" />
+  <title>Mr-MZ-lab — GitHub Dashboard</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">MZ</span><div><strong>Mr-MZ-lab</strong><small>Developer Dashboard</small></div></div>
+      <nav>
+        <a class="active" href="#overview">Overview</a>
+        <a href="#repositories">Repositories</a>
+        <a href="#activity">Activity</a>
+        <a href="#profile">Profile</a>
+      </nav>
+      <div class="sidebar-footer"><span class="status-dot"></span> GitHub API connected</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><span class="eyebrow">GITHUB / COMMAND CENTER</span><h1>Developer Dashboard</h1></div>
+        <a class="github-btn" href="https://github.com/Mr-MZ-lab" target="_blank" rel="noreferrer">Open GitHub ↗</a>
+      </header>
+
+      <section id="overview" class="hero panel">
+        <div class="profile-main">
+          <img id="avatar" class="avatar" src="https://github.com/Mr-MZ-lab.png?size=160" alt="GitHub avatar" />
+          <div><div class="live-badge"><span class="status-dot"></span> LIVE PROFILE</div><h2 id="name">Mr-MZ-lab</h2><p id="bio">Loading GitHub profile…</p><div class="meta"><span id="location">—</span><span id="followers">— followers</span><span id="following">— following</span></div></div>
+        </div>
+        <div class="hero-stat"><span>Public repos</span><strong id="repoCount">—</strong></div>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card panel"><span>Repositories</span><strong id="reposStat">—</strong><small>Public projects</small></article>
+        <article class="stat-card panel"><span>Followers</span><strong id="followersStat">—</strong><small>Community reach</small></article>
+        <article class="stat-card panel"><span>Following</span><strong id="followingStat">—</strong><small>Developer network</small></article>
+        <article class="stat-card panel"><span>Account age</span><strong id="ageStat">—</strong><small>Since GitHub signup</small></article>
+      </section>
+
+      <section id="repositories" class="panel section">
+        <div class="section-head"><div><span class="eyebrow">PROJECT PORTFOLIO</span><h2>Repositories</h2></div><span class="count-pill" id="repoPill">0</span></div>
+        <div id="repos" class="repo-grid"><div class="loading">Loading repositories…</div></div>
+      </section>
+
+      <section id="activity" class="panel section">
+        <div class="section-head"><div><span class="eyebrow">SIGNALS</span><h2>GitHub Activity</h2></div></div>
+        <div id="activityGrid" class="activity-grid"><div class="loading">Loading activity…</div></div>
+      </section>
+
+      <section id="profile" class="panel section profile-section">
+        <div><span class="eyebrow">PROFILE</span><h2>Mr-MZ-lab</h2><p>A personal developer command center powered directly by the public GitHub API.</p></div>
+        <div class="profile-links"><a href="https://github.com/Mr-MZ-lab" target="_blank" rel="noreferrer">GitHub ↗</a><span>Last sync: <b id="lastSync">—</b></span></div>
+      </section>
+      <footer>Built for <strong>Mr-MZ-lab</strong> · GitHub Dashboard · <span id="year"></span></footer>
+    </main>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>
