@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment
+.env
+
+# Saved models (binary artifacts)
+saved_models/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
